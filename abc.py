@@ -1,36 +1,46 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 
-st.title("🟡 Future Gold Price Prediction Analysis")
-
-# Sample historical gold prices
-prices = [1850, 1852, 1855, 1853, 1858, 1862, 1865, 1868, 1870, 1873, 1876]
-
-df = pd.DataFrame({"Gold Price": prices})
-df["Day"] = np.arange(len(df))
-
-# Simple trend prediction
-slope = (prices[-1] - prices[0]) / len(prices)
-
-future_days = st.slider("Select future days", 5, 30, 10)
-
-future_prices = [
-    prices[-1] + slope * i for i in range(1, future_days + 1)
+# --- Sample Data ---
+data = [
+    {"Product": "Baby Stroller", "Category": "Gear", "Age": "0-2 yrs", "Price": 120},
+    {"Product": "Infant Car Seat", "Category": "Gear", "Age": "0-1 yrs", "Price": 150},
+    {"Product": "Baby Monitor", "Category": "Safety", "Age": "0-3 yrs", "Price": 80},
+    {"Product": "Teething Toy", "Category": "Toys", "Age": "0-1 yrs", "Price": 15},
+    {"Product": "Feeding Bottles", "Category": "Feeding", "Age": "0-2 yrs", "Price": 25},
+    {"Product": "High Chair", "Category": "Feeding", "Age": "1-3 yrs", "Price": 60},
+    {"Product": "Play Gym", "Category": "Toys", "Age": "0-1 yrs", "Price": 30},
+    {"Product": "Baby Blanket", "Category": "Clothing", "Age": "0-2 yrs", "Price": 20},
 ]
 
-future_df = pd.DataFrame({
-    "Day": range(len(df), len(df) + future_days),
-    "Predicted Gold Price": future_prices
-})
+df = pd.DataFrame(data)
 
-st.subheader("📈 Gold Price Trend")
-chart_df = pd.concat([
-    df.rename(columns={"Gold Price": "Price"}),
-    future_df.rename(columns={"Predicted Gold Price": "Price"})
-])
+# --- Streamlit Interface ---
+st.title("🍼 Baby Product Recommendation System")
 
-st.line_chart(chart_df.set_index("Day"))
+# Select categories user likes
+categories = df["Category"].unique().tolist()
 
-st.subheader("🔮 Future Prediction Table")
-st.dataframe(future_df)
+selected_cats = st.multiselect(
+    "Select baby product categories you like:",
+    categories
+)
+
+# Filter products
+if selected_cats:
+    recommendations = df[df["Category"].isin(selected_cats)]
+else:
+    recommendations = df
+
+st.subheader("Recommended Products")
+st.table(recommendations)
+
+# Additional filter by max price
+max_price = st.slider("Select maximum price:", 0, 200, 100)
+
+filtered = recommendations[recommendations["Price"] <= max_price]
+
+st.subheader("Filtered by Price")
+st.table(filtered)
+
+st.write("✨ Adjust the filters to customize recommendations!")
