@@ -1,2 +1,1 @@
-pip install streamlit
-pip install numpy pandas
+pip install streamlit yfinance pandas scikit-learn matplotlib
