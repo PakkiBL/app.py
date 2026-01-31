@@ -1,46 +1,43 @@
+# streamlit_crop_advisory.py
+
 import streamlit as st
-import pandas as pd
 
-# --- Sample Data ---
-data = [
-    {"Product": "Baby Stroller", "Category": "Gear", "Age": "0-2 yrs", "Price": 120},
-    {"Product": "Infant Car Seat", "Category": "Gear", "Age": "0-1 yrs", "Price": 150},
-    {"Product": "Baby Monitor", "Category": "Safety", "Age": "0-3 yrs", "Price": 80},
-    {"Product": "Teething Toy", "Category": "Toys", "Age": "0-1 yrs", "Price": 15},
-    {"Product": "Feeding Bottles", "Category": "Feeding", "Age": "0-2 yrs", "Price": 25},
-    {"Product": "High Chair", "Category": "Feeding", "Age": "1-3 yrs", "Price": 60},
-    {"Product": "Play Gym", "Category": "Toys", "Age": "0-1 yrs", "Price": 30},
-    {"Product": "Baby Blanket", "Category": "Clothing", "Age": "0-2 yrs", "Price": 20},
-]
+st.set_page_config(page_title="Weather Based Crop Advisory System", layout="centered")
+st.title("🌾 Weather Based Crop Advisory System")
 
-df = pd.DataFrame(data)
+# Sidebar input
+st.sidebar.header("Enter Weather Parameters")
+temperature = st.sidebar.number_input("Temperature (°C)", min_value=-10.0, max_value=50.0, value=30.0)
+rainfall = st.sidebar.number_input("Rainfall (mm)", min_value=0.0, max_value=500.0, value=100.0)
+humidity = st.sidebar.number_input("Humidity (%)", min_value=0.0, max_value=100.0, value=60.0)
 
-# --- Streamlit Interface ---
-st.title("🍼 Baby Product Recommendation System")
+# Crop advisory logic
+def crop_advisory(temp, rain, hum):
+    crops = []
+    # Simple rules (you can expand with more conditions or ML)
+    if 20 <= temp <= 30 and 50 <= rain <= 150 and 50 <= hum <= 70:
+        crops.append("Rice 🌾")
+    if 25 <= temp <= 35 and 20 <= rain <= 100 and 40 <= hum <= 60:
+        crops.append("Wheat 🌱")
+    if 18 <= temp <= 32 and 30 <= rain <= 120 and 50 <= hum <= 80:
+        crops.append("Maize 🌽")
+    if 20 <= temp <= 28 and 100 <= rain <= 250 and 60 <= hum <= 90:
+        crops.append("Sugarcane 🍬")
+    if 22 <= temp <= 30 and 10 <= rain <= 50 and 30 <= hum <= 50:
+        crops.append("Millets 🌾")
+    
+    if len(crops) == 0:
+        return "No suitable crops found for the given weather conditions."
+    else:
+        return "Recommended Crops: " + ", ".join(crops)
 
-# Select categories user likes
-categories = df["Category"].unique().tolist()
+# Display recommendation
+st.subheader("Crop Recommendation")
+advice = crop_advisory(temperature, rainfall, humidity)
+st.success(advice)
 
-selected_cats = st.multiselect(
-    "Select baby product categories you like:",
-    categories
-)
-
-# Filter products
-if selected_cats:
-    recommendations = df[df["Category"].isin(selected_cats)]
-else:
-    recommendations = df
-
-st.subheader("Recommended Products")
-st.table(recommendations)
-
-# Additional filter by max price
-max_price = st.slider("Select maximum price:", 0, 200, 100)
-
-filtered = recommendations[recommendations["Price"] <= max_price]
-
-st.subheader("Filtered by Price")
-st.table(filtered)
-
-st.write("✨ Adjust the filters to customize recommendations!")
+# Optional: show current input
+st.subheader("Input Parameters")
+st.write(f"🌡 Temperature: {temperature} °C")
+st.write(f"🌧 Rainfall: {rainfall} mm")
+st.write(f"💧 Humidity: {humidity} %")
