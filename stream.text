@@ -1,2 +1,2 @@
 pip install streamlit
-pip install yfinance pandas
+pip install numpy pandas
