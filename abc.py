@@ -1,33 +1,54 @@
 import streamlit as st
-from transformers import pipeline
-import PyPDF2
 
-st.title("⚖️ AI Advocate: Legal Document Summarizer")
+st.set_page_config(page_title="Resume Skill Gap Analyzer", page_icon="📄")
 
-# Upload PDF
-uploaded_file = st.file_uploader("Upload a legal document (PDF)", type="pdf")
+st.title("📄 Resume Skill Gap Analyzer")
+st.write("Identify missing skills for your target job role")
 
-if uploaded_file is not None:
-    pdf_reader = PyPDF2.PdfReader(uploaded_file)
-    text = ""
-    for page in pdf_reader.pages:
-        text += page.extract_text() or ""
-    
-    st.subheader("Extracted Text")
-    st.write(text[:1000] + "..." if len(text) > 1000 else text)
+# Job roles and required skills
+job_roles = {
+    "Data Analyst": ["Python", "SQL", "Excel", "Power BI", "Statistics"],
+    "Web Developer": ["HTML", "CSS", "JavaScript", "React", "Git"],
+    "Software Tester": ["Manual Testing", "Automation", "Selenium", "SQL", "JIRA"],
+    "Digital Marketer": ["SEO", "Content Writing", "Google Ads", "Analytics"],
+    "Cloud Engineer": ["AWS", "Linux", "Networking", "Docker", "Python"]
+}
 
-    # Summarization
-    st.subheader("AI Summary")
-    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+role = st.selectbox("🎯 Select Job Role", list(job_roles.keys()))
 
-    # Split text into chunks of 1000 words
-    chunk_size = 1000
-    text_chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
-    summary_text = ""
+user_skills = st.text_input(
+    "🛠 Enter your skills (comma separated)",
+    placeholder="Example: Python, Excel, SQL"
+)
 
-    with st.spinner("Summarizing document..."):
-        for chunk in text_chunks:
-            summary_chunk = summarizer(chunk, max_length=150, min_length=50, do_sample=False)
-            summary_text += summary_chunk[0]['summary_text'] + " "
+if st.button("Analyze Skill Gap"):
+    if user_skills.strip() == "":
+        st.warning("Please enter at least one skill")
+    else:
+        user_skill_list = [s.strip().title() for s in user_skills.split(",")]
+        required_skills = job_roles[role]
 
-    st.success(summary_text)
+        matched = list(set(user_skill_list) & set(required_skills))
+        missing = list(set(required_skills) - set(user_skill_list))
+
+        st.subheader("✅ Matched Skills")
+        if matched:
+            st.success(", ".join(matched))
+        else:
+            st.info("No matching skills")
+
+        st.subheader("❌ Missing Skills")
+        if missing:
+            st.error(", ".join(missing))
+        else:
+            st.success("You have all required skills 🎉")
+
+        score = int((len(matched) / len(required_skills)) * 100)
+        st.metric("🎯 Skill Match Percentage", f"{score}%")
+
+        if score < 50:
+            st.warning("Strong upskilling required")
+        elif score < 80:
+            st.info("Good progress, improve missing skills")
+        else:
+            st.success("Job-ready profile 👍")
