@@ -1,65 +1,23 @@
 import streamlit as st
-import yfinance as yf
 import pandas as pd
+import numpy as np
+import time
 
-# Page configuration
-st.set_page_config(
-    page_title="Crypto Trends Analyzer",
-    page_icon="📈",
-    layout="centered"
-)
+st.set_page_config(page_title="Crypto Trends Analyzer", page_icon="📈")
 
-st.title("📊 Crypto Trends Analyzer")
-st.markdown("Analyze real-time cryptocurrency price trends")
+st.title("📊 Crypto Trends Analyzer (Simulation Mode)")
 
-# Crypto selection
-crypto_dict = {
-    "Bitcoin (BTC)": "BTC-USD",
-    "Ethereum (ETH)": "ETH-USD",
-    "Ripple (XRP)": "XRP-USD",
-    "Litecoin (LTC)": "LTC-USD"
-}
+crypto = st.selectbox("Select Crypto", ["Bitcoin", "Ethereum", "Solana"])
 
-crypto_name = st.selectbox("Select Cryptocurrency", list(crypto_dict.keys()))
-crypto_symbol = crypto_dict[crypto_name]
+if st.button("Analyze Trend"):
+    with st.spinner("Analyzing live trend..."):
+        time.sleep(1)
 
-# Time period selection
-period = st.selectbox(
-    "Select Time Period",
-    ["1d", "5d", "1mo", "3mo", "6mo", "1y"]
-)
+        prices = np.random.randint(20000, 30000, size=10)
+        df = pd.DataFrame({"Price": prices})
 
-# Fetch data
-if st.button("🔍 Analyze Trend", type="primary"):
-    with st.spinner("Fetching live crypto data..."):
-        data = yf.download(crypto_symbol, period=period)
+        trend = "UP 📈" if prices[-1] > prices[0] else "DOWN 📉"
 
-    if data.empty:
-        st.error("Unable to fetch data. Try again later.")
-    else:
-        st.subheader(f"📈 {crypto_name} Price Trend")
-
-        # Current price
-        current_price = data["Close"].iloc[-1]
-        previous_price = data["Close"].iloc[0]
-
-        # Trend logic
-        if current_price > previous_price:
-            trend = "UP 📈"
-            st.success(f"Trend: {trend}")
-        else:
-            trend = "DOWN 📉"
-            st.error(f"Trend: {trend}")
-
-        st.metric(
-            label="Current Price (USD)",
-            value=f"${current_price:.2f}",
-            delta=f"{current_price - previous_price:.2f}"
-        )
-
-        # Line chart
-        st.line_chart(data["Close"])
-
-        # Data table
-        with st.expander("📄 View Raw Data"):
-            st.dataframe(data.tail())
+        st.metric("Current Price (USD)", prices[-1])
+        st.success(f"Trend: {trend}")
+        st.line_chart(df)
