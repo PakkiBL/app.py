@@ -1,29 +1,22 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-
-st.set_page_config(page_title="Future Gold Price Prediction", page_icon="🟡")
 
 st.title("🟡 Future Gold Price Prediction Analysis")
-st.markdown("Offline trend-based gold price forecasting")
 
-# Sample historical gold price data
-prices = [
-    1850, 1852, 1855, 1853, 1858, 1862,
-    1865, 1868, 1870, 1873, 1876
-]
+# Sample historical gold prices
+prices = [1850, 1852, 1855, 1853, 1858, 1862, 1865, 1868, 1870, 1873, 1876]
 
-df = pd.DataFrame({"Price": prices})
+df = pd.DataFrame({"Gold Price": prices})
 df["Day"] = np.arange(len(df))
 
-# Simple trend calculation
-slope = (df["Price"].iloc[-1] - df["Price"].iloc[0]) / len(df)
+# Simple trend prediction
+slope = (prices[-1] - prices[0]) / len(prices)
 
-future_days = st.slider("Select future days to predict", 5, 30, 10)
+future_days = st.slider("Select future days", 5, 30, 10)
 
 future_prices = [
-    df["Price"].iloc[-1] + slope * i for i in range(1, future_days + 1)
+    prices[-1] + slope * i for i in range(1, future_days + 1)
 ]
 
 future_df = pd.DataFrame({
@@ -31,16 +24,13 @@ future_df = pd.DataFrame({
     "Predicted Gold Price": future_prices
 })
 
-# Plot
-fig, ax = plt.subplots()
-ax.plot(df["Day"], df["Price"], label="Historical Price")
-ax.plot(future_df["Day"], future_df["Predicted Gold Price"],
-        linestyle="dashed", label="Future Prediction")
-ax.set_xlabel("Days")
-ax.set_ylabel("Gold Price")
-ax.legend()
+st.subheader("📈 Gold Price Trend")
+chart_df = pd.concat([
+    df.rename(columns={"Gold Price": "Price"}),
+    future_df.rename(columns={"Predicted Gold Price": "Price"})
+])
 
-st.pyplot(fig)
+st.line_chart(chart_df.set_index("Day"))
 
-st.subheader("🔮 Predicted Gold Prices")
+st.subheader("🔮 Future Prediction Table")
 st.dataframe(future_df)
