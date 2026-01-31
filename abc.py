@@ -1,5 +1,4 @@
 import streamlit as st
-import yfinance as yf
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -8,49 +7,46 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Future Gold Price Prediction", page_icon="🟡")
 
 st.title("🟡 Future Gold Price Prediction Analysis")
-st.markdown("Predict future gold prices using Machine Learning")
+st.markdown("Offline Machine Learning model (No API, No Internet)")
 
-# User input
-days = st.slider("Select number of future days to predict", 5, 30, 10)
+# Sample historical gold price data
+prices = [
+    1850, 1852, 1855, 1853, 1858, 1862, 1865,
+    1868, 1870, 1873, 1875, 1878, 1880
+]
 
-# Load gold data
-with st.spinner("Fetching historical gold data..."):
-    data = yf.download("GC=F", period="1y")
+df = pd.DataFrame({"Price": prices})
+df["Day"] = np.arange(len(df))
 
-data = data.reset_index()
-data["Day"] = np.arange(len(data))
+# Train ML model
+X = df[["Day"]]
+y = df["Price"]
 
-# Prepare ML data
-X = data[["Day"]]
-y = data["Close"]
-
-# Train model
 model = LinearRegression()
 model.fit(X, y)
 
-# Predict future
-future_days = np.arange(len(data), len(data) + days).reshape(-1, 1)
-future_prices = model.predict(future_days)
+# User input
+future_days = st.slider("Select future days to predict", 5, 30, 10)
 
-# Create future dataframe
+future_X = np.arange(len(df), len(df) + future_days).reshape(-1, 1)
+future_prices = model.predict(future_X)
+
 future_df = pd.DataFrame({
-    "Day": future_days.flatten(),
-    "Predicted Price": future_prices
+    "Day": future_X.flatten(),
+    "Predicted Gold Price": future_prices
 })
 
-# Plot graph
-st.subheader("📈 Gold Price Prediction")
-
+# Plot
 fig, ax = plt.subplots()
-ax.plot(data["Day"], y, label="Historical Price")
-ax.plot(future_df["Day"], future_df["Predicted Price"], 
+ax.plot(df["Day"], y, label="Historical Price")
+ax.plot(future_df["Day"], future_df["Predicted Gold Price"],
         linestyle="dashed", label="Future Prediction")
 ax.set_xlabel("Days")
-ax.set_ylabel("Gold Price (USD)")
+ax.set_ylabel("Gold Price")
 ax.legend()
 
 st.pyplot(fig)
 
-# Show prediction table
+# Output table
 st.subheader("🔮 Predicted Gold Prices")
-st.dataframe(future_df.tail())
+st.dataframe(future_df)
